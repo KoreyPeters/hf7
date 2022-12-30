@@ -1,19 +1,40 @@
 {% extends "utilities/base.html" %}
+{% load static %}
 {% block container %}
     <h1>{{ user.username }}</h1>
     <h2>{{ user.email }}</h2>
     {% if profile_owned_by_user %}
         <h3>Points: {{ user.points }}</h3>
-        <h1>Recent Activities</h1>
-        <ul>
+
+        <h2 class="mt-5 text-center">Show this QR code to event organizers to check you in.</h2>
+        <div class="text-center m-4">
+            <canvas id="qr"></canvas>
+        </div>
+        <h1 class="mt-5">Recent Activities</h1>
+        <ul class="list-group">
             {% for activity in activities %}
-                <li>{{ activity }}</li>
+                <a href="{{ activity.url }}" class="list-group-item list-group-item-action">{{ activity.kind }} | <span class="timestamp">{{ activity.created_at|date:"c" }}</span></a>
             {% endfor %}
         </ul>
     {% endif %}
     {% if ask_to_check_in %}
         <h2>Would you like to check this user in to the {{ recent_event.name }} event?</h2>
-        <a href="{% url 'eventium-events-checkin' recent_event.id user.id %}" class="btn btn-primary">Check {{ user.username }} in
+        <a href="{% url 'eventium-events-checkin' recent_event.id user.id %}"
+           class="btn btn-primary">Check {{ user.username }} in
         </a>
     {% endif %}
+{% endblock %}
+
+{% block extra_script %}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
+    <script src="{% static 'utilities/js/qrious.min.js' %}"></script>
+    <script>
+        (function () {
+            var qr = new QRious({
+                element: document.getElementById('qr'),
+                size: 200,
+                value: `${window.location.origin}{% url 'profile-detail' request.user.id %}`
+            });
+        })();
+    </script>
 {% endblock %}

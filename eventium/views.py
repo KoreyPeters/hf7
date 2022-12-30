@@ -56,26 +56,39 @@ def events_checkin(request, event_id, attendee_id):
     event = get_object_or_404(Event, id=event_id)
     attendee = get_object_or_404(HfUser, id=attendee_id)
     if event.created_at > pendulum.now() - pendulum.duration(hours=2):
-        try:
-            Activity.objects.get(
-                user=attendee.id,
-                kind=Activity.ActivityKind.EVENT_ATTENDANCE,
-                entity=event.id,
-            )
+        if attendee == event.organizer:
             messages.error(
-                request, f"{attendee.safe_username} is already attending this event"
+                request,
+                "The event organizer is already attending by default. They do not need to be checked in.",
             )
-        except Activity.DoesNotExist:
-            Activity.objects.create(
-                user=attendee,
-                kind=Activity.ActivityKind.EVENT_ATTENDANCE,
-                url=reverse("eventium-events-detail", args=[event.id]),
-                entity=event.id,
+        if request.user == attendee and not event.allow_self_check_in:
+            messages.warning(
+                request,
+                "You cannot check yourself into this event. Please contact the event organizer to check you in.",
             )
+        else:
+            try:
+                Activity.objects.get(
+                    user=attendee.id,
+                    kind=Activity.ActivityKind.EVENT_ATTENDANCE,
+                    entity=event.id,
+                )
+                messages.error(
+                    request,
+                    f"{attendee.safe_username()} is already attending this event",
+                )
+            except Activity.DoesNotExist:
+                Activity.objects.create(
+                    user=attendee,
+                    kind=Activity.ActivityKind.EVENT_ATTENDANCE,
+                    url=reverse("eventium-events-detail", args=[event.id]),
+                    entity=event.id,
+                )
 
-            messages.success(
-                request, f"{attendee.safe_username} has been checked in to {event.name}"
-            )
+                messages.success(
+                    request,
+                    f"{attendee.safe_username()} has been checked in to {event.name}",
+                )
         return redirect(reverse("eventium-events-detail", args=[event.id]))
     else:
         return HttpResponseBadRequest()

@@ -2,9 +2,6 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block title %}Recent event{% endblock %}
-{% block script %}
-    <script src="{% static 'eventium/js/localtime.js' %}"></script>
-{% endblock %}
 
 {% block container %}
     {% if request.user.is_authenticated %}
@@ -28,4 +25,8 @@
             </a>
         {% endfor %}
     </ul>
+{% endblock %}
+
+{% block extra_script %}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
 {% endblock %}

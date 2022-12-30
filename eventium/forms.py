@@ -12,7 +12,7 @@ class EventForm(forms.ModelForm):
         self.helper.form_id = "id-event-create"
         self.helper.form_class = "blueForms"
         self.helper.form_method = "post"
-        self.helper.form_action = "submit_survey"
+        self.helper.form_action = "/eventium/events/"
 
         self.helper.add_input(Submit("submit", "Create Event"))
 

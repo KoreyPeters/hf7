@@ -1,2 +1,5 @@
-<h1>Welcome to Eventium</h1>
-<a href="{% url "eventium-events-list" %}">Recent events</a>
+{% extends "utilities/base.html" %}
+{% block container %}
+    <h1>Welcome to Eventium</h1>
+    <a href="{% url "eventium-events-list" %}">Recent events</a>
+{% endblock %}

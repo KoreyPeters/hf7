@@ -1,6 +1,34 @@
 {% extends "utilities/base.html" %}
+{% load static %}
+
+{% block title %}HF | Eventium | {{ event.name }}{% endblock %}
 
 {% block container %}
     <h1>{{ event.name }}</h1>
-    <h2>Time: {{ event.created_at }}</h2>
+    <h2>Time: <span class="timestamp">{{ event.created_at|date:"c" }}</span></h2>
+    {% if event.allow_self_check_in %}
+        <form class="my-5" action="{% url 'eventium-events-checkin' event.id request.user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Check in to this event</button>
+        </form>
+
+    {% endif %}
+    <h2>Scan this QR code to view this event on your mobile device.</h2>
+    <div class="text-center m-4">
+        <canvas id="qr"></canvas>
+    </div>
+{% endblock %}
+
+{% block extra_script %}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
+    <script src="{% static 'utilities/js/qrious.min.js' %}"></script>
+    <script>
+        (function () {
+            var qr = new QRious({
+                element: document.getElementById('qr'),
+                size: 200,
+                value: `${window.location.origin}{% url 'eventium-events-checkin' event.id request.user.id %}`
+            });
+        })();
+    </script>
 {% endblock %}

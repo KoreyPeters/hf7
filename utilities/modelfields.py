@@ -5,7 +5,10 @@ from django.db.models import DateTimeField as BaseDateTimeField
 class PendulumDateTimeField(BaseDateTimeField):
     def to_python(self, value):
         dt = super(PendulumDateTimeField, self).to_python(value)
-        return pendulum.instance(dt)
+        if dt:
+            return pendulum.instance(dt)
+        else:
+            return dt
 
     def value_to_string(self, obj):
         value = self.value_from_object(obj)
