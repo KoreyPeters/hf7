@@ -1,6 +1,5 @@
 import pendulum
 from django.contrib import messages
-from django.http import HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
@@ -15,6 +14,9 @@ def home(request):
 
 def events_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    can_check_in = False
+    if event.created_at > pendulum.now() - pendulum.duration(hours=2):
+        can_check_in = True
     return render(request, "eventium/events_detail.html", locals())
 
 
@@ -28,9 +30,11 @@ def events_finalize(request, event_id):
 
 def events_list(request):
     if request.method == "POST" and request.user.is_authenticated:
-        form = EventForm(request.POST, initial={"organizer": request.user})
+        form = EventForm(request.POST)
         if form.is_valid():
-            event = form.save()
+            event = form.save(commit=False)
+            event.organizer = request.user
+            event.save()
             Activity.objects.create(
                 kind=Activity.ActivityKind.EVENT_ORGANIZER,
                 url=reverse("eventium-events-detail", args=[event.id]),
@@ -61,7 +65,7 @@ def events_checkin(request, event_id, attendee_id):
                 request,
                 "The event organizer is already attending by default. They do not need to be checked in.",
             )
-        if request.user == attendee and not event.allow_self_check_in:
+        elif request.user == attendee and not event.allow_self_check_in:
             messages.warning(
                 request,
                 "You cannot check yourself into this event. Please contact the event organizer to check you in.",
@@ -91,4 +95,5 @@ def events_checkin(request, event_id, attendee_id):
                 )
         return redirect(reverse("eventium-events-detail", args=[event.id]))
     else:
-        return HttpResponseBadRequest()
+        messages.error(request, "Something went wrong.")
+        return redirect(reverse("eventium-events-detail", args=[event.id]))

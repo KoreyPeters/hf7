@@ -48,6 +48,8 @@ def profile(request, user_id=None):
 
         user = request.user
         activities = user.activities.all()[:10]
+        events = user.organized.order_by("-created_at")[:10]
+        events = Event.objects.filter(organizer=user)
         return render(request, "utilities/profile.html", locals())
     else:
         return redirect("landing")

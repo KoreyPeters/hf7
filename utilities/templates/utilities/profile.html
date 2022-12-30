@@ -13,7 +13,8 @@
         <h1 class="mt-5">Recent Activities</h1>
         <ul class="list-group">
             {% for activity in activities %}
-                <a href="{{ activity.url }}" class="list-group-item list-group-item-action">{{ activity.kind }} | <span class="timestamp">{{ activity.created_at|date:"c" }}</span></a>
+                <a href="{{ activity.url }}" class="list-group-item list-group-item-action">{{ activity.kind }} | <span
+                        class="timestamp">{{ activity.created_at|date:"c" }}</span></a>
             {% endfor %}
         </ul>
     {% endif %}
@@ -23,6 +24,15 @@
            class="btn btn-primary">Check {{ user.username }} in
         </a>
     {% endif %}
+    <h1 class="mt-5">Your Events</h1>
+    <p>This is a list of events you have created. Share them with your friends!</p>
+    <ul class="list-group">
+        {% for event in events %}
+            <a href="{% url 'eventium-events-detail' event.id %}" class="list-group-item list-group-item-action">{{ event.name }} | <span
+                    class="timestamp">{{ event.created_at|date:"c" }}</span></a>
+        {% endfor %}
+    </ul>
+
 {% endblock %}
 
 {% block extra_script %}

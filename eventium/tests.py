@@ -62,7 +62,7 @@ class TesCheckIn(TestCase):
             reverse("eventium-events-checkin", args=[event.id, self.user2.id]),
             follow=True,
         )
-        self.assertEqual(r.status_code, 400)
+        self.assertContains(r, "Something went wrong", 1, 200)
 
     def test_check_in(self):
         event = Event.objects.create(name="TestEvent1", organizer=self.user1)
@@ -77,7 +77,7 @@ class TesCheckIn(TestCase):
             reverse("eventium-events-checkin", args=[event.id, self.user2.id]),
             follow=True,
         )
-        self.assertContains(r, event.name, 2, 200)
+        self.assertContains(r, event.name, 3, 200)
         self.assertContains(
             r, f"{self.user2.safe_username()} has been checked in to", 1, 200
         )
@@ -116,7 +116,7 @@ class TesCheckIn(TestCase):
         event = Event.objects.create(name="TestEvent1", organizer=self.user1)
         self.assertTrue(self.client.login(username="user2", password="password2"))
         r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
-        self.assertContains(r, "Check in to this event", 0, 200)
+        self.assertContains(r, "Check in to this event", 1, 200)
         r = self.client.post(
             reverse("eventium-events-checkin", args=[event.id, self.user2.id]),
             follow=True,
@@ -132,8 +132,12 @@ class TesCheckIn(TestCase):
             organizer=self.user1,
             created_at=pendulum.now() - pendulum.duration(hours=3),
         )
+
+        r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
+        self.assertContains(r, "Check in to this event", 0, 200)
+
         r = self.client.post(
             reverse("eventium-events-checkin", args=[event.id, self.user2.id]),
             follow=True,
         )
-        self.assertEqual(r.status_code, 400)
+        self.assertContains(r, "Something went wrong", 1, 200)

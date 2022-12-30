@@ -17,7 +17,11 @@ class Event(models.Model):
     name = models.CharField(max_length=250)
     values = models.IntegerField(default=0)
     organizer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="organized",
     )
     allow_self_check_in = models.BooleanField(default=True)
     finalized_at = PendulumDateTimeField(blank=True, null=True)

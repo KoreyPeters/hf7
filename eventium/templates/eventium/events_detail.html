@@ -6,14 +6,14 @@
 {% block container %}
     <h1>{{ event.name }}</h1>
     <h2>Time: <span class="timestamp">{{ event.created_at|date:"c" }}</span></h2>
-    {% if event.allow_self_check_in %}
-        <form class="my-5" action="{% url 'eventium-events-checkin' event.id request.user.id %}" method="post">
+    {% if event.allow_self_check_in and can_check_in %}
+        <form class="mt-5" action="{% url 'eventium-events-checkin' event.id request.user.id %}" method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">Check in to this event</button>
         </form>
 
     {% endif %}
-    <h2>Scan this QR code to view this event on your mobile device.</h2>
+    <h2 class="mt-5">Scan this QR code to view this event on your mobile device.</h2>
     <div class="text-center m-4">
         <canvas id="qr"></canvas>
     </div>
