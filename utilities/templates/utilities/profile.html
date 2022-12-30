@@ -1,0 +1,19 @@
+{% extends "utilities/base.html" %}
+{% block container %}
+    <h1>{{ user.username }}</h1>
+    <h2>{{ user.email }}</h2>
+    {% if profile_owned_by_user %}
+        <h3>Points: {{ user.points }}</h3>
+        <h1>Recent Activities</h1>
+        <ul>
+            {% for activity in activities %}
+                <li>{{ activity }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if ask_to_check_in %}
+        <h2>Would you like to check this user in to the {{ recent_event.name }} event?</h2>
+        <a href="{% url 'eventium-events-checkin' recent_event.id user.id %}" class="btn btn-primary">Check {{ user.username }} in
+        </a>
+    {% endif %}
+{% endblock %}

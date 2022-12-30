@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 
@@ -20,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 DEBUG = os.environ.get("DEBUG", True)
+TESTING = "test" in sys.argv
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", "INSECURE")
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "crispy_forms",
     "eventium.apps.EventiumConfig",
     "utilities.apps.UtilitiesConfig",
 ]
@@ -77,6 +80,13 @@ WSGI_APPLICATION = "hf7.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+if TESTING:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    }
 if DEBUG:
     DATABASES = {
         "default": {
@@ -139,4 +149,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "utilities.HfUser"
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "sesame.backends.ModelBackend",
+]
+
 SESAME_MAX_AGE = 60 * 10  # in seconds
+SESAME_SIGNATURE_SIZE = 14
+SESAME_PACKER = "utilities.packers.Packer"
+LOGIN_REDIRECT_URL = "/profile/"
+CRISPY_TEMPLATE_PACK = "bootstrap"
+
+if TESTING:
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]

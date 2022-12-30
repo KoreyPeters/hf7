@@ -1,0 +1,31 @@
+{% extends "utilities/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Recent event{% endblock %}
+{% block script %}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
+{% endblock %}
+
+{% block container %}
+    {% if request.user.is_authenticated %}
+        <div class="row">
+            <div class="card my-5 mx-auto">
+                <div class="card-header"><h2>Create an event</h2></div>
+                <div class="card-body">
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <h2><a href="{% url 'email-login' %}">Login to create an event</a></h2>
+    {% endif %}
+
+    <h1>Recent Events</h1>
+    <ul class="list-group">
+        {% for event in events %}
+            <a href="{% url "eventium-events-detail" event.id %}" class="list-group-item list-group-item-action">
+                {{ event.name }} <span class="timestamp">{{ event.created_at|date:"c" }}</span>
+            </a>
+        {% endfor %}
+    </ul>
+{% endblock %}

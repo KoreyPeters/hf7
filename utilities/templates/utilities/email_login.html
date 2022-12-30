@@ -1,0 +1,17 @@
+{% extends "utilities/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Log in{% endblock %}
+{% block container %}
+    <h1>Enter your email to sign-up/log-in</h1>
+    {% if request.user.is_authenticated %}
+        <p>You are already logged in as {{ request.user.email }}.</p>
+    {% endif %}
+    <form action="{{ request.path }}" method="POST">
+        {% csrf_token %}
+        <p>
+            {{ form|crispy }}
+            <input type="submit" class="btn btn-primary my-3" value="Send log in link">
+        </p>
+    </form>
+    <p>Your email is not sold to anyone. It will never be used for any purpose other than logging you in to HF.</p>
+{% endblock %}
