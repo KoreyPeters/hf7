@@ -17,9 +17,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'eventium-events-list' %}">Events</a>
                         </li>
-                        {#                <li class="nav-item">#}
-                        {#                    <a class="nav-link" href="{% url 'surveys_list' %}">Surveys</a>#}
-                        {#                </li>#}
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'survey-list' %}">Surveys</a>
+                                        </li>
                         {% if request.user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

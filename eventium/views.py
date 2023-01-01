@@ -1,3 +1,5 @@
+import random
+
 import pendulum
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
@@ -5,6 +7,7 @@ from django.urls import reverse
 
 from eventium.forms import EventForm
 from eventium.models import Event, EventCategory
+from utilities.gcp_utilities import create_task
 from utilities.models import Category, Activity, HfUser
 
 
@@ -15,7 +18,10 @@ def home(request):
 def events_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     can_check_in = False
-    if event.created_at > pendulum.now() - pendulum.duration(hours=2):
+    if (
+        event.organizer != request.user
+        and event.created_at > pendulum.now() - pendulum.duration(hours=2)
+    ):
         can_check_in = True
     return render(request, "eventium/events_detail.html", locals())
 
@@ -42,7 +48,7 @@ def events_list(request):
                 entity=event.id,
             )
             try:
-                category = Category.objects.get(name="Event")
+                category = Category.objects.get(name="DefaultEvent")
                 EventCategory.objects.create(event=event, category=category)
             except Category.DoesNotExist:
                 pass
@@ -82,12 +88,23 @@ def events_checkin(request, event_id, attendee_id):
                     f"{attendee.safe_username()} is already attending this event",
                 )
             except Activity.DoesNotExist:
-                Activity.objects.create(
+                activity = Activity.objects.create(
                     user=attendee,
                     kind=Activity.ActivityKind.EVENT_ATTENDANCE,
                     url=reverse("eventium-events-detail", args=[event.id]),
                     entity=event.id,
                 )
+
+                if random.randint(0, 100) < 20:
+                    create_task(
+                        "survey-response",
+                        f"create-survey-{request.user.id}-{event.id}",
+                        {
+                            "user_id": request.user.id,
+                            "activity_id": activity.id,
+                        },
+                        delay_minutes=60 * 3,
+                    )
 
                 messages.success(
                     request,

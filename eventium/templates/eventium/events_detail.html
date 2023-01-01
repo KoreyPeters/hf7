@@ -13,6 +13,13 @@
         </form>
 
     {% endif %}
+    {% if event.organizer == request.user %}
+        <h2 class="mt-5">Registering attendees.</h2>
+        <p>If your event allows attendees to check themselves in, they can scan the QR code on this page and check
+            themselves in on their device.</p>
+        <p>If your event does <strong>not</strong> allow self-check in, you can scan the QR code on their HF profile
+            page to check them in.</p>
+    {% endif %}
     <h2 class="mt-5">Scan this QR code to view this event on your mobile device.</h2>
     <div class="text-center m-4">
         <canvas id="qr"></canvas>

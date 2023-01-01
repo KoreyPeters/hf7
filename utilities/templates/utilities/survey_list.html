@@ -1,0 +1,26 @@
+{% extends 'utilities/base.html' %}
+{% load static %}
+{% block title %}HF | Surveys{% endblock %}
+
+{% block container %}
+    <h1>Surveys</h1>
+    <p>User surveys are the principal mechanism by which HF determines that value that each activity has.</p>
+    <p>Every time you complete a survey, you make all HF users richer.</p>
+
+    <h2>Your recent surveys</h2>
+
+    <ul class="list-group">
+        {% for survey in surveys %}
+            <a href="{% url "survey-detail" survey.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between">
+                    {{ survey.activity.kind }} <span class="timestamp">{{ survey.created_at|date:"c" }}</span>
+                    {% if survey.completed_at %}Complete{% else %}Pending{% endif %}
+                </div>
+            </a>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block extra_script %}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'utilities/base.html' %}
+{% load static %}
+{% block title %}HF | Surveys | {{ survey.activity.kind }}{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'utilities/js/survey/bundle.css' %}"/>
+    <script defer src="{% static 'utilities/js/survey/bundle.js' %}" id="svelte"></script>
+{% endblock %}
+
+{% block container %}
+    <h1>Survey {{ survey.activity.kind }}</h1>
+    <p>Created at: <span class="timestamp">{{ survey.created_at }}</span></p>
+    <div id="survey-widget"></div>
+    <form class="mt-5" action="{% url 'survey-detail' survey.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" id="survey-results" name="survey-results">
+        <button type="submit" class="btn btn-primary">Submit Survey</button>
+    </form>
+{% endblock %}
+
+{% block extra_script %}
+    {{ survey.survey_results|json_script:"survey-data" }}
+    <script src="{% static 'eventium/js/localtime.js' %}"></script>
+{% endblock %}
