@@ -397,7 +397,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (18:8) {#each survey_data as criterion}
+    // (16:8) {#each survey_data as criterion}
     function create_each_block(ctx) {
     	let tr;
     	let input;
@@ -426,11 +426,11 @@ var app = (function () {
     			br = element("br");
     			t3 = space();
     			attr_dev(input, "type", "checkbox");
-    			add_location(input, file, 19, 16, 529);
+    			add_location(input, file, 17, 16, 388);
     			toggle_class(span, "checked", /*criterion*/ ctx[3].response);
-    			add_location(span, file, 20, 16, 632);
-    			add_location(br, file, 21, 16, 717);
-    			add_location(tr, file, 18, 12, 508);
+    			add_location(span, file, 18, 16, 491);
+    			add_location(br, file, 19, 16, 576);
+    			add_location(tr, file, 16, 12, 367);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, tr, anchor);
@@ -476,7 +476,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(18:8) {#each survey_data as criterion}",
+    		source: "(16:8) {#each survey_data as criterion}",
     		ctx
     	});
 
@@ -485,15 +485,8 @@ var app = (function () {
 
     function create_fragment(ctx) {
     	let main;
-    	let h1;
-    	let t3;
-    	let p0;
-    	let t4;
-    	let a;
-    	let t6;
-    	let t7;
-    	let p1;
-    	let t9;
+    	let p;
+    	let t1;
     	let table;
     	let each_value = /*survey_data*/ ctx[0];
     	validate_each_argument(each_value);
@@ -506,30 +499,17 @@ var app = (function () {
     	const block = {
     		c: function create() {
     			main = element("main");
-    			h1 = element("h1");
-    			h1.textContent = `Hello ${name}!`;
-    			t3 = space();
-    			p0 = element("p");
-    			t4 = text("Visit the ");
-    			a = element("a");
-    			a.textContent = "Svelte tutorial";
-    			t6 = text(" to learn how to build Svelte apps.");
-    			t7 = space();
-    			p1 = element("p");
-    			p1.textContent = "Please select all that are true.";
-    			t9 = space();
+    			p = element("p");
+    			p.textContent = "Please select all that are true.";
+    			t1 = space();
     			table = element("table");
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
 
-    			add_location(h1, file, 13, 4, 262);
-    			attr_dev(a, "href", "https://svelte.dev/tutorial");
-    			add_location(a, file, 14, 17, 302);
-    			add_location(p0, file, 14, 4, 289);
-    			add_location(p1, file, 15, 4, 403);
-    			add_location(table, file, 16, 4, 447);
+    			add_location(p, file, 13, 4, 262);
+    			add_location(table, file, 14, 4, 306);
     			add_location(main, file, 12, 0, 251);
     		},
     		l: function claim(nodes) {
@@ -537,15 +517,8 @@ var app = (function () {
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
-    			append_dev(main, h1);
-    			append_dev(main, t3);
-    			append_dev(main, p0);
-    			append_dev(p0, t4);
-    			append_dev(p0, a);
-    			append_dev(p0, t6);
-    			append_dev(main, t7);
-    			append_dev(main, p1);
-    			append_dev(main, t9);
+    			append_dev(main, p);
+    			append_dev(main, t1);
     			append_dev(main, table);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {

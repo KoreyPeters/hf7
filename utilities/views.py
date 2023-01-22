@@ -1,16 +1,21 @@
+import google
 import orjson
 import pendulum
 import sesame
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
+from django.core import management
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
+from google.cloud import secretmanager
 
 from eventium.models import Event
 from .forms import EmailLoginForm
 from .mailer import send_simple_message
-from .models import Survey, Criterion
+from .models import Survey, Criterion, HfUser
 
 
 class EmailLoginView(FormView):
@@ -97,3 +102,50 @@ def survey_detail(request, survey_id):
                 for c in criteria
             ]
         return render(request, "utilities/survey_detail.html", locals())
+
+
+@csrf_exempt
+def cr_management(request):
+    print("cr_management called")
+    if request.headers.get("x-api-key"):
+        _, project_id = google.auth.default()
+        client = secretmanager.SecretManagerServiceClient()
+        secret_key = f"projects/{project_id}/secrets/API_KEY/versions/latest"
+        try:
+            secret_key = client.access_secret_version(
+                name=secret_key
+            ).payload.data.decode("UTF-8")
+        except Exception as e:
+            print(e)
+        if request.headers["x-api-key"] == secret_key:
+            try:
+                print("Migrating")
+                management.call_command("migrate", verbosity=0, interactive=False)
+                print("Migration complete")
+            except Exception as e:
+                print(e)
+
+            try:
+                users = HfUser.objects.filter(is_superuser=True)
+                if len(users) == 0:
+                    superusername = (
+                        f"projects/{project_id}/secrets/SUPERUSER/versions/latest"
+                    )
+                    superuserpassword = (
+                        f"projects/{project_id}/secrets/SUPERPASS/versions/latest"
+                    )
+
+                    superusername = client.access_secret_version(
+                        name=superusername
+                    ).payload.data.decode("UTF-8")
+                    superuserpassword = client.access_secret_version(
+                        name=superuserpassword
+                    ).payload.data.decode("UTF-8")
+                    user = HfUser.objects.create_superuser(
+                        username=superusername, password=superuserpassword
+                    )
+                    print(f"Super user created: {user}")
+            except Exception as e:
+                print(e)
+                print("Superuser already exists. Skipping...")
+    return JsonResponse({"status": "ok"})

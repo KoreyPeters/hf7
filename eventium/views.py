@@ -1,3 +1,4 @@
+import os
 import random
 
 import pendulum
@@ -26,14 +27,6 @@ def events_detail(request, event_id):
     return render(request, "eventium/events_detail.html", locals())
 
 
-def events_finalize(request, event_id):
-    # Roll up all surveys
-    # Determine final event score
-    # Assign score to all participants
-    # Assign score to organizer
-    pass
-
-
 def events_list(request):
     if request.method == "POST" and request.user.is_authenticated:
         form = EventForm(request.POST)
@@ -42,16 +35,22 @@ def events_list(request):
             event.organizer = request.user
             event.save()
             Activity.objects.create(
-                kind=Activity.ActivityKind.EVENT_ORGANIZER,
+                kind=Activity.ActivityKind.EVENTIUM_EVENT_ORGANIZER,
                 url=reverse("eventium-events-detail", args=[event.id]),
                 user=request.user,
                 entity=event.id,
             )
-            try:
-                category = Category.objects.get(name="DefaultEvent")
-                EventCategory.objects.create(event=event, category=category)
-            except Category.DoesNotExist:
-                pass
+            category = Category.objects.get(name="DefaultEvent")
+            EventCategory.objects.create(event=event, category=category)
+            if os.environ.get("ROOT_URL"):
+                create_task(
+                    "finalize-event",
+                    f"finalize-event--{event.id}",
+                    {
+                        "event_id": event.id,
+                    },
+                    delay_minutes=60 * 24 * 3,
+                )
             return redirect("eventium-events-detail", event_id=event.id)
     else:
         if request.user.is_authenticated:
@@ -80,7 +79,7 @@ def events_checkin(request, event_id, attendee_id):
             try:
                 Activity.objects.get(
                     user=attendee.id,
-                    kind=Activity.ActivityKind.EVENT_ATTENDANCE,
+                    kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
                     entity=event.id,
                 )
                 messages.error(
@@ -90,21 +89,23 @@ def events_checkin(request, event_id, attendee_id):
             except Activity.DoesNotExist:
                 activity = Activity.objects.create(
                     user=attendee,
-                    kind=Activity.ActivityKind.EVENT_ATTENDANCE,
+                    kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
                     url=reverse("eventium-events-detail", args=[event.id]),
                     entity=event.id,
                 )
 
                 if random.randint(0, 100) < 20:
-                    create_task(
-                        "survey-response",
-                        f"create-survey-{request.user.id}-{event.id}",
-                        {
-                            "user_id": request.user.id,
-                            "activity_id": activity.id,
-                        },
-                        delay_minutes=60 * 3,
-                    )
+                    if os.environ.get("ROOT_URL"):
+                        create_task(
+                            "survey-initiated",
+                            f"create-survey--{request.user.id}--{event.id}",
+                            {
+                                "user_id": request.user.id,
+                                "activity_id": activity.id,
+                                "entity_id": event.id,
+                            },
+                            delay_minutes=60 * 3,
+                        )
 
                 messages.success(
                     request,

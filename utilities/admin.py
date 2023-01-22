@@ -9,9 +9,14 @@ class ActivityAdmin(ModelAdmin):
     list_filter = ["kind"]
 
 
+class CriterionAdmin(ModelAdmin):
+    list_display = ["question", "category", "value"]
+    list_filter = ["category"]
+
+
 admin.site.register(HfUser, UserAdmin)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Category)
 admin.site.register(Configuration)
-admin.site.register(Criterion)
+admin.site.register(Criterion, CriterionAdmin)
 admin.site.register(Survey)

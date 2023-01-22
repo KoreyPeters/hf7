@@ -11,9 +11,4 @@ urlpatterns = [
         views.events_checkin,
         name="eventium-events-checkin",
     ),
-    path(
-        "events/<event_id>/finalize",
-        views.events_finalize,
-        name="eventium-events-finalize",
-    ),
 ]

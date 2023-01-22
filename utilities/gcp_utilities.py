@@ -45,7 +45,7 @@ def create_task(queue_name, task_name, data, delay_minutes=0):
                             },
                         },
                         "name": client.task_path(
-                            "human-flourishing-4", "us-central1", task_name
+                            "human-flourishing-4", "us-central1", queue_name, task_name
                         ),
                         "schedule_time": scheduled_task_time,
                     },
