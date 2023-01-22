@@ -131,3 +131,4 @@ dmypy.json
 .idea
 
 /ui/survey/public/
+/prod-ca-2021.crt
