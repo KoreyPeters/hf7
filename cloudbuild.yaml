@@ -17,8 +17,6 @@ steps:
   - id: "build  "
     name: "gcr.io/cloud-builders/docker"
     args: ["build", "-t", "gcr.io/${PROJECT_ID}/humanflourishing", "."]
-    waitFor:
-      - "tf plan"
 
   - id: "push   "
     name: "gcr.io/cloud-builders/docker"
