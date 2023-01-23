@@ -27,13 +27,7 @@ steps:
     args:
       - '-c'
       - |
-        if [ -d "terraform/environments/$BRANCH_NAME/" ]; then
-          gcloud run deploy humanflourishing --platform managed --service-account humanflourishing@${PROJECT_ID}.iam.gserviceaccount.com --region ${_REGION} --image gcr.io/${PROJECT_ID}/humanflourishing --allow-unauthenticated --update-env-vars "CURRENT_HOST=https://humanflourishing-$(cat /workspace/cloud_run_hash.txt)-uc.a.run.app"
-        else
-          echo "***************************** SKIPPING DEPLOY *******************************"
-          echo "Branch '$BRANCH_NAME' does not represent an official environment."
-          echo "*******************************************************************************"
-        fi
+        gcloud run deploy humanflourishing --platform managed --service-account humanflourishing@${PROJECT_ID}.iam.gserviceaccount.com --region ${_REGION} --image gcr.io/${PROJECT_ID}/humanflourishing --allow-unauthenticated --update-env-vars "CURRENT_HOST=https://humanflourishing-$(cat /workspace/cloud_run_hash.txt)-uc.a.run.app"
 
 
 substitutions:
