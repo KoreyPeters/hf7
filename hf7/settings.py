@@ -56,7 +56,7 @@ if not DEBUG:
     gcs = storage.Client()
     bucket = gcs.get_bucket("hf-private")
     blob = bucket.blob("prod-ca-2021.crt")
-    blob.download_to_file(os.path.join(BASE_DIR, "prod-ca-2021.crt"))
+    blob.download_to_filename(os.path.join(BASE_DIR, "prod-ca-2021.crt"))
 
 
 CURRENT_HOST = env.list("CURRENT_HOST", default=None)
