@@ -214,7 +214,7 @@ else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 # URL prepends
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 
 # literal file locations
