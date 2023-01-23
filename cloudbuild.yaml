@@ -16,7 +16,10 @@
 steps:
   - id: "build  "
     name: "gcr.io/cloud-builders/git"
-    args: ["build", "-t", "gcr.io/${PROJECT_ID}/humanflourishing", "."]
+    entrypoint: bash
+    args:
+      - '-c'
+      - gcloud build -t gcr.io/${PROJECT_ID}/humanflourishing .
 
   - id: "push   "
     name: "gcr.io/cloud-builders/docker"
