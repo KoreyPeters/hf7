@@ -25,17 +25,22 @@ class EmailLoginView(FormView):
     def form_valid(self, form):
         email = form.cleaned_data["email"]
         User = get_user_model()
-        user = User.objects.get(email=email)
+        user, created = User.objects.get_or_create(email=email)
 
         link = reverse("profile")
         link += sesame.utils.get_query_string(user)
+
+        if created:
+            subject = "Thank you for joining HF!"
+        else:
+            subject = ("Magic Link for Human Flourishing (HF)",)
+
         send_simple_message(
             user.email,
-            "Magic Link for Human Flourishing (HF)",
-            f"Please use the following link to log in.\nhttps://localhost:8000{link}",
+            subject,
+            f"Please use the following link to log in.\nhttps://humanflourishing.online{link}",
         )
-        print("magic link:" + link)
-        return render(self.request, "utilities/email_login_success.html")
+        return render(self.request, "utilities/email_login_success.html", locals())
 
 
 def profile(request, user_id=None):

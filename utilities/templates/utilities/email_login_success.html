@@ -1,5 +1,8 @@
 {% extends "utilities/base.html" %}
 {% block title %}Log in{% endblock %}
 {% block container %}
+    {% if created %}
+        <h2>Thank you for joining HF!</h2>
+    {% endif %}
     <p>We sent a log in link. Check your email.</p>
 {% endblock %}

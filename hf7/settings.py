@@ -9,28 +9,68 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import io
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
+import environ
+import google.auth
+from google.cloud import secretmanager
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env_file = env("ENV_PATH", default=BASE_DIR / ".env")
 
-
+if env_file.exists():
+    env.read_env(str(env_file))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-DEBUG = os.environ.get("DEBUG", True)
 TESTING = "test" in sys.argv
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "INSECURE")
 
-# SECURITY WARNING: don't run with debug turned on in production!
+try:
+    _, project_id = google.auth.default()
 
-ALLOWED_HOSTS = []
+    client = secretmanager.SecretManagerServiceClient()
+    settings_name = env("SETTINGS_NAME", default="hf-production")
+    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
 
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+    env.read_env(io.StringIO(payload))
+except (
+    google.auth.exceptions.DefaultCredentialsError,
+    google.api_core.exceptions.NotFound,
+    google.api_core.exceptions.PermissionDenied,
+):
+    pass
 
+SECRET_KEY = env("SECRET_KEY")
+
+DEBUG = env("DEBUG", default=False)
+
+CURRENT_HOST = env.list("CURRENT_HOST", default=None)
+if CURRENT_HOST:
+    ALLOWED_HOSTS = [urlparse(host).netloc for host in CURRENT_HOST]
+    CSRF_TRUSTED_ORIGINS = CURRENT_HOST
+else:
+    ALLOWED_HOSTS = ["localhost"]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+
+if "localhost" not in ALLOWED_HOSTS:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    X_FRAME_OPTIONS = "DENY"
 # Application definition
 
 INSTALLED_APPS = [
@@ -79,7 +119,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "hf7.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -132,7 +171,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -143,7 +181,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
