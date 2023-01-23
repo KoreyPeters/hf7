@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 import environ
 import google.auth
-from google.cloud import secretmanager
+from google.cloud import secretmanager, storage
 
 env = environ.Env()
 
@@ -51,6 +51,13 @@ except (
 SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG", default=False)
+
+if not DEBUG:
+    gcs = storage.Client()
+    bucket = gcs.get_bucket("hf-private")
+    blob = bucket.blob("prod-ca-2021.crt")
+    blob.download_to_file(os.path.join(BASE_DIR, "prod-ca-2021.crt"))
+
 
 CURRENT_HOST = env.list("CURRENT_HOST", default=None)
 if CURRENT_HOST:
