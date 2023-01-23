@@ -27,7 +27,7 @@ steps:
     args:
       - '-c'
       - |
-        gcloud run deploy humanflourishing --platform managed --service-account humanflourishing@${PROJECT_ID}.iam.gserviceaccount.com --region ${_REGION} --image gcr.io/${PROJECT_ID}/humanflourishing --allow-unauthenticated --update-env-vars "CURRENT_HOST=https://humanflourishing-cncfwwwe3q-uc.a.run.app"
+        gcloud run deploy humanflourishing --platform managed --service-account humanflourishing@${PROJECT_ID}.iam.gserviceaccount.com --region ${_REGION} --image gcr.io/${PROJECT_ID}/humanflourishing --allow-unauthenticated --update-env-vars "CURRENT_HOST=https://humanflourishing.online"
 
 
 substitutions:
