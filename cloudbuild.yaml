@@ -21,12 +21,6 @@ steps:
       - '-c'
       - gcloud builds submit --tag gcr.io/${PROJECT_ID}/humanflourishing
 
-  - id: "push   "
-    name: "gcr.io/cloud-builders/docker"
-    args: [ "push", "gcr.io/${PROJECT_ID}/humanflourishing"]
-    waitFor:
-      - "build  "
-
   - id: "Deploy to Cloud Run DGM"
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: bash
