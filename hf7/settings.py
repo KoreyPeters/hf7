@@ -184,8 +184,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
+GS_BUCKET_NAME = env("GS_BUCKET_NAME", default=None)
 
-STATIC_URL = "static/"
+if GS_BUCKET_NAME:
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_DEFAULT_ACL = "publicRead"
+else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+# URL prepends
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+
+# literal file locations
+STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL.replace("/", ""))
+MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.replace("/", ""))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
