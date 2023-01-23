@@ -131,6 +131,13 @@ def cr_management(request):
                 print(e)
 
             try:
+                print("Collecting static")
+                management.call_command("collectstatic", verbosity=0, interactive=False)
+                print("Collection complete")
+            except Exception as e:
+                print(e)
+
+            try:
                 users = HfUser.objects.filter(is_superuser=True)
                 if len(users) == 0:
                     superusername = (
