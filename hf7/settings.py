@@ -61,6 +61,7 @@ if not DEBUG:
     logger = logging.Client()
     logger.setup_logging()
     LOGGING = {
+        "version": 1,
         "handlers": {
             "stackdriver": {
                 "class": "google.cloud.logging.handlers.CloudLoggingHandler",
