@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.conf import settings
 
-from lib.location_field.settings import LOCATION_FIELD
+from location_field.settings import LOCATION_FIELD
 
 
 class DefaultConfig(AppConfig):
