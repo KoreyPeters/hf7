@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 import environ
 import google.auth
-from google.cloud import secretmanager, storage
+from google.cloud import secretmanager, storage, logging
 
 env = environ.Env()
 
@@ -57,6 +57,18 @@ if not DEBUG:
     bucket = gcs.get_bucket("hf-private")
     blob = bucket.blob("prod-ca-2021.crt")
     blob.download_to_filename(os.path.join(BASE_DIR, "prod-ca-2021.crt"))
+
+    logger = logging.Client()
+    logger.setup_logging()
+    LOGGING = {
+        "handlers": {
+            "stackdriver": {
+                "class": "google.cloud.logging.handlers.CloudLoggingHandler",
+                "client": logger,
+            }
+        },
+        "loggers": {"": {"handlers": ["stackdriver"], "level": "DEBUG"}},
+    }
 
 
 CURRENT_HOST = env.list("CURRENT_HOST", default=None)
