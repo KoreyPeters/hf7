@@ -32,25 +32,29 @@ if env_file.exists():
 TESTING = "test" in sys.argv
 
 
-try:
-    _, project_id = google.auth.default()
+if TESTING:
+    SECRET_KEY = "1234"
+    DEBUG = True
+else:
+    try:
+        _, project_id = google.auth.default()
 
-    client = secretmanager.SecretManagerServiceClient()
-    settings_name = env("SETTINGS_NAME", default="hf-production")
-    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+        client = secretmanager.SecretManagerServiceClient()
+        settings_name = env("SETTINGS_NAME", default="hf-production")
+        name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
 
-    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-    env.read_env(io.StringIO(payload))
-except (
-    google.auth.exceptions.DefaultCredentialsError,
-    google.api_core.exceptions.NotFound,
-    google.api_core.exceptions.PermissionDenied,
-):
-    pass
+        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+        env.read_env(io.StringIO(payload))
+    except (
+        google.auth.exceptions.DefaultCredentialsError,
+        google.api_core.exceptions.NotFound,
+        google.api_core.exceptions.PermissionDenied,
+    ):
+        pass
 
-SECRET_KEY = env("SECRET_KEY")
+    SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = env("DEBUG", default=False)
+    DEBUG = env("DEBUG", default=False)
 
 if not DEBUG:
     gcs = storage.Client()

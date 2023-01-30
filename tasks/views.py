@@ -36,7 +36,7 @@ def finalize_event(request):
     event = Event.objects.get(id=data["event_id"])
 
     # Roll up all surveys
-    surveys = Survey.objects.filter(entity=event.id)
+    surveys = Survey.objects.filter(entity=event.id, completed_at__isnull=False)
     survey_results = {}
     for survey in surveys:
         for result in survey.survey_results:
@@ -60,7 +60,7 @@ def finalize_event(request):
     for criterion, result in survey_results.items():
         criterion_value = Criterion.objects.get(id=criterion).value
         success_percentage = (
-            result["count"] / result["success"] if result["success"] > 0 else 0
+            result["success"] / result["count"] if result["count"] > 0 else 0
         )
         final_rating += criterion_value * success_percentage
     event.rating = final_rating

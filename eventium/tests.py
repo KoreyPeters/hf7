@@ -1,12 +1,9 @@
-from datetime import timedelta
-
-import pendulum
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils import timezone
 
+import pendulum
 from eventium.models import Event
-from utilities.models import HfUser, Activity
+from utilities.models import HfUser, Activity, Survey, Category, Criterion
 
 
 # Create your tests here.
@@ -15,6 +12,7 @@ class TesCheckIn(TestCase):
         self.client = Client()
         self.user1 = HfUser.objects.create_user(username="user1", password="password1")
         self.user2 = HfUser.objects.create_user(username="user2", password="password2")
+        self.user3 = HfUser.objects.create_user(username="user3", password="password3")
 
     def test_root_profile_url_logged_in(self):
         self.assertTrue(self.client.login(username="user1", password="password1"))
@@ -84,7 +82,7 @@ class TesCheckIn(TestCase):
 
         self.assertIsNotNone(
             Activity.objects.get(
-                user=self.user2, kind=Activity.ActivityKind.EVENT_ATTENDANCE
+                user=self.user2, kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE
             )
         )
 
@@ -141,3 +139,149 @@ class TesCheckIn(TestCase):
             follow=True,
         )
         self.assertContains(r, "Something went wrong", 1, 200)
+
+    def test_event_finalization(self):
+        category = Category.objects.create(name="DefaultEvent")
+        criterion = Criterion.objects.create(
+            category=category, question="Question1", value=10
+        )
+        event = Event.objects.create(name="TestEvent1", organizer=self.user1)
+
+        # Organizer
+        activity1 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ORGANIZER,
+            url="/",
+            user=self.user1,
+            entity=event.id,
+        )
+
+        # Attendee 1
+        activity2 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
+            url="/",
+            user=self.user2,
+            entity=event.id,
+        )
+        Survey.objects.create(
+            activity_id=activity2.id,
+            completed_at=pendulum.now(),
+            entity=event.id,
+            survey_results=[
+                {
+                    "id": str(criterion.id),
+                    "question": criterion.question,
+                    "response": True,
+                }
+            ],
+            user_id=self.user2.id,
+        )
+
+        # Attendee 2
+        activity3 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
+            url="/",
+            user=self.user3,
+            entity=event.id,
+        )
+        Survey.objects.create(
+            activity_id=activity3.id,
+            completed_at=pendulum.now(),
+            entity=event.id,
+            survey_results=[
+                {
+                    "id": str(criterion.id),
+                    "question": criterion.question,
+                    "response": False,
+                }
+            ],
+            user_id=self.user2.id,
+        )
+
+        self.client.post(reverse("tasks-finalize-event"), data={"event_id": event.id})
+
+        event.refresh_from_db()
+        # confirm the event is finalized
+        self.assertIsNotNone(event.finalized_at)
+        # confirm event rating
+        self.assertEqual(5, event.rating)
+        # Reward the organizer
+        activity1.refresh_from_db()
+        self.assertEqual(2, activity1.points)
+        # Award points to all attendees
+        activity2.refresh_from_db()
+        self.assertEqual(5, activity2.points)
+        activity3.refresh_from_db()
+        self.assertEqual(5, activity3.points)
+
+    def test_event_finalization_only_completed_surveys(self):
+        category = Category.objects.create(name="DefaultEvent")
+        criterion = Criterion.objects.create(
+            category=category, question="Question1", value=10
+        )
+        event = Event.objects.create(name="TestEvent1", organizer=self.user1)
+
+        # Organizer
+        activity1 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ORGANIZER,
+            url="/",
+            user=self.user1,
+            entity=event.id,
+        )
+
+        # Attendee 1
+        activity2 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
+            url="/",
+            user=self.user2,
+            entity=event.id,
+        )
+        Survey.objects.create(
+            activity_id=activity2.id,
+            completed_at=pendulum.now(),
+            entity=event.id,
+            survey_results=[
+                {
+                    "id": str(criterion.id),
+                    "question": criterion.question,
+                    "response": True,
+                }
+            ],
+            user_id=self.user2.id,
+        )
+
+        # Attendee 2
+        activity3 = Activity.objects.create(
+            kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE,
+            url="/",
+            user=self.user3,
+            entity=event.id,
+        )
+        Survey.objects.create(
+            activity_id=activity3.id,
+            completed_at=None,
+            entity=event.id,
+            survey_results=[
+                {
+                    "id": str(criterion.id),
+                    "question": criterion.question,
+                    "response": False,
+                }
+            ],
+            user_id=self.user2.id,
+        )
+
+        self.client.post(reverse("tasks-finalize-event"), data={"event_id": event.id})
+
+        event.refresh_from_db()
+        # confirm the event is finalized
+        self.assertIsNotNone(event.finalized_at)
+        # confirm event rating
+        self.assertEqual(10, event.rating)
+        # Reward the organizer
+        activity1.refresh_from_db()
+        self.assertEqual(4, activity1.points)
+        # Award points to all attendees
+        activity2.refresh_from_db()
+        self.assertEqual(10, activity2.points)
+        activity3.refresh_from_db()
+        self.assertEqual(10, activity3.points)
