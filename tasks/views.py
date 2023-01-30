@@ -1,3 +1,5 @@
+from django.db.models import Sum
+
 import pendulum
 from rest_framework import authentication
 from rest_framework.decorators import api_view, authentication_classes
@@ -74,11 +76,19 @@ def finalize_event(request):
         activity.points = event.rating
         activity.save()
         attendee_count += 1
+        activity.user.points = Activity.objects.filter(user=activity.user).aggregate(
+            Sum("points")
+        )["points__sum"]
+        activity.user.save()
 
     # Reward the organizer
     organizer = Activity.objects.get(user=event.organizer, entity=event.id)
     organizer.points = (event.rating * attendee_count) * 0.2
     organizer.save()
+    organizer.user.points = Activity.objects.filter(user=organizer.user).aggregate(
+        Sum("points")
+    )["points__sum"]
+    organizer.user.save()
 
     # Mark the event finalized
     event.finalized_at = pendulum.now()

@@ -213,6 +213,14 @@ class TesCheckIn(TestCase):
         activity3.refresh_from_db()
         self.assertEqual(5, activity3.points)
 
+        # Point total has rolled up
+        self.user1.refresh_from_db()
+        self.assertEqual(2, self.user1.points)
+        self.user2.refresh_from_db()
+        self.assertEqual(5, self.user2.points)
+        self.user3.refresh_from_db()
+        self.assertEqual(5, self.user3.points)
+
     def test_event_finalization_only_completed_surveys(self):
         category = Category.objects.create(name="DefaultEvent")
         criterion = Criterion.objects.create(
@@ -285,3 +293,11 @@ class TesCheckIn(TestCase):
         self.assertEqual(10, activity2.points)
         activity3.refresh_from_db()
         self.assertEqual(10, activity3.points)
+
+        # Point total has rolled up
+        self.user1.refresh_from_db()
+        self.assertEqual(4, self.user1.points)
+        self.user2.refresh_from_db()
+        self.assertEqual(10, self.user2.points)
+        self.user3.refresh_from_db()
+        self.assertEqual(10, self.user3.points)
