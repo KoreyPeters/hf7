@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     django_ulid.models.ULIDField(
-                        default=spendium.models.new_ulid,
+                        default=utilities.models.new_ulid,
                         editable=False,
                         primary_key=True,
                         serialize=False,

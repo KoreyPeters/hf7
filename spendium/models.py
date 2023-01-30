@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import pendulum
 from django.db import models
 from django_ulid.models import ULIDField, default
@@ -7,13 +9,7 @@ from utilities.modelfields import PendulumDateTimeField
 from utilities.models import HfModel
 
 
-def new_ulid():
-    return default()
-
-
-class Store(models.Model):
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    created_at = PendulumDateTimeField(default=pendulum.now)
+class Store(HfModel):
     name = models.CharField(max_length=250)
     location = PlainLocationField(
         based_fields=["city"], zoom=5, default="40.17887331434696,-95.625"
@@ -29,5 +25,9 @@ class Store(models.Model):
 
 class Purchase(HfModel):
     currency = models.CharField(max_length=3)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     payment_channel = models.CharField(max_length=10)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    timestamp = PendulumDateTimeField(default=pendulum.now)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE
+    )
