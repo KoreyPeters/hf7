@@ -24,6 +24,7 @@ from utilities.views import EmailLoginView, landing, logout_user
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("eventium/", include("eventium.urls")),
+    path("spendium/", include("spendium.urls")),
     path("sesame/login/", LoginView.as_view(), name="sesame-login"),
     path("tasks/", include("tasks.urls")),
     path("login/", EmailLoginView.as_view(), name="email-login"),
