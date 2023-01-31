@@ -6,12 +6,23 @@
 {% block container %}
     <h1>{{ event.name }}</h1>
     <h2>Time: <span class="timestamp">{{ event.created_at|date:"c" }}</span></h2>
-    {% if event.allow_self_check_in and can_check_in %}
-        <form class="mt-5" action="{% url 'eventium-events-checkin' event.id request.user.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Check in to this event</button>
-        </form>
-
+    {% if can_check_in %}
+        {% if event.allow_self_check_in %}
+            {% if request.user.is_authenticated %}
+                <form class="mt-5" action="{% url 'eventium-events-checkin' event.id request.user.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Check in to this event</button>
+                </form>
+            {% else %}
+                <a class="btn btn-primary mt-5" href="{% url 'email-login' %}">Want to attend? Sign in/up</a>
+            {% endif %}
+        {% else %}
+            {% if request.user.is_authenticated %}
+                <a class="btn btn-primary mt-5" href="{% url 'profile' %}">Click here to show your QR code to the event organizer</a>
+            {% else %}
+                <a class="btn btn-primary mt-5" href="{% url 'email-login' %}">Want to attend? Sign in/up</a>
+            {% endif %}
+        {% endif %}
     {% endif %}
     {% if event.organizer == request.user %}
         <h2 class="mt-5">Registering attendees.</h2>
@@ -20,10 +31,13 @@
         <p>If your event does <strong>not</strong> allow self-check in, you can scan the QR code on their HF profile
             page to check them in.</p>
     {% endif %}
-    <h2 class="mt-5">Scan this QR code to view this event on your mobile device.</h2>
-    <div class="text-center m-4">
-        <canvas id="qr"></canvas>
-    </div>
+    {% if request.user.is_authenticated %}
+        <h2 class="mt-5">Scan this QR code to view this event on your mobile device.</h2>
+        <div class="text-center m-4">
+            <canvas id="qr"></canvas>
+        </div>
+    {% else %}
+    {% endif %}
 {% endblock %}
 
 {% block extra_script %}
@@ -34,7 +48,7 @@
             var qr = new QRious({
                 element: document.getElementById('qr'),
                 size: 200,
-                value: `${window.location.origin}{% url 'eventium-events-checkin' event.id request.user.id %}`
+                value: `${window.location.origin}{% url 'eventium-events-detail' event.id %}`
             });
         })();
     </script>

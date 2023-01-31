@@ -19,6 +19,42 @@ class TesCheckIn(TestCase):
         r = self.client.get(reverse("profile"), follow=True)
         self.assertContains(r, "Recent Activities", 1, 200)
 
+    def test_logged_in_user_scans_event_qr(self):
+        # Anonymous users must sign up before checking in
+        event = Event.objects.create(name="TestEvent1", organizer=self.user1)
+        r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
+        self.assertContains(r, "Want to attend? Sign in/up", 1, 200)
+
+        # Signed-in users can self-check in
+        self.assertTrue(self.client.login(username="user2", password="password2"))
+        r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
+        self.assertContains(r, "Check in to this event", 1, 200)
+
+        r = self.client.post(
+            reverse("eventium-events-checkin", args=[event.id, self.user2.id]),
+            follow=True,
+        )
+        self.assertContains(
+            r,
+            f"{self.user2.safe_username()} has been checked in to {event.name}",
+            1,
+            200,
+        )
+
+        # Events that do not allow self-checkin need the organizer's help
+        event.allow_self_check_in = False
+        event.save()
+        self.client.logout()
+        r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
+        self.assertContains(r, "Want to attend? Sign in/up", 1, 200)
+
+        self.assertTrue(self.client.login(username="user2", password="password2"))
+        r = self.client.get(reverse("eventium-events-detail", args=[event.id]))
+        self.assertContains(r, "Click here to show your QR code to the event", 1, 200)
+        self.assertContains(
+            r, '<a class="btn btn-primary mt-5" href="/profile/">', 1, 200
+        )
+
     def test_root_profile_url_logged_out(self):
         r = self.client.get(reverse("profile"), follow=True)
         self.assertContains(r, "Welcome to HF", 1, 200)

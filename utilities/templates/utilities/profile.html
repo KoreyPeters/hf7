@@ -20,15 +20,17 @@
     {% endif %}
     {% if ask_to_check_in %}
         <h2>Would you like to check this user in to the {{ recent_event.name }} event?</h2>
-        <a href="{% url 'eventium-events-checkin' recent_event.id user.id %}"
-           class="btn btn-primary">Check {{ user.username }} in
-        </a>
+        <form class="mt-5" action="{% url 'eventium-events-checkin' recent_event.id user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Check {{ user.username }} in</button>
+        </form>
     {% endif %}
     <h1 class="mt-5">Your Events</h1>
     <p>This is a list of events you have created. Share them with your friends!</p>
     <ul class="list-group">
         {% for event in events %}
-            <a href="{% url 'eventium-events-detail' event.id %}" class="list-group-item list-group-item-action">{{ event.name }} | <span
+            <a href="{% url 'eventium-events-detail' event.id %}"
+               class="list-group-item list-group-item-action">{{ event.name }} | <span
                     class="timestamp">{{ event.created_at|date:"c" }}</span></a>
         {% endfor %}
     </ul>
