@@ -70,7 +70,6 @@ if not DEBUG:
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
-                "formatter": "local",
             },
             "stackdriver": {
                 "class": "google.cloud.logging.handlers.CloudLoggingHandler",
@@ -96,7 +95,6 @@ if not DEBUG:
             "": {"handlers": ["stackdriver"], "level": "DEBUG"},
         },
     }
-    print("before")
     logging.debug("This is a debug message")
     logging.info("This is an info message")
     logging.warning("This is a warning")
