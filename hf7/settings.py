@@ -10,12 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import io
+import logging
 import os
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-import logging
 import environ
 import google.auth
 from google.cloud import secretmanager, storage
@@ -32,7 +32,6 @@ if env_file.exists():
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 TESTING = "test" in sys.argv
-
 
 if TESTING:
     SECRET_KEY = "1234"
@@ -69,19 +68,39 @@ if not DEBUG:
     LOGGING = {
         "version": 1,
         "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "local",
+            },
             "stackdriver": {
                 "class": "google.cloud.logging.handlers.CloudLoggingHandler",
                 "client": log_client,
-            }
+            },
         },
-        "loggers": {"": {"handlers": ["stackdriver"], "level": "DEBUG"}},
+        "loggers": {
+            "users": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+            "django": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "django.db.backends": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "": {"handlers": ["stackdriver"], "level": "DEBUG"},
+        },
     }
     print("before")
     logging.debug("This is a debug message")
     logging.info("This is an info message")
     logging.warning("This is a warning")
     logging.error("This is an error")
-
 
 CURRENT_HOST = env.list("CURRENT_HOST", default=None)
 if CURRENT_HOST:
