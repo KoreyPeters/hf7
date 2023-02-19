@@ -15,9 +15,11 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+import logging
 import environ
 import google.auth
-from google.cloud import secretmanager, storage, logging
+from google.cloud import secretmanager, storage
+from google.cloud.logging import Client
 
 env = environ.Env()
 
@@ -62,18 +64,23 @@ if not DEBUG:
     blob = bucket.blob("prod-ca-2021.crt")
     blob.download_to_filename(os.path.join(BASE_DIR, "prod-ca-2021.crt"))
 
-    logger = logging.Client()
-    logger.setup_logging()
+    log_client = Client()
+    log_client.setup_logging(log_level=logging.DEBUG)
     LOGGING = {
         "version": 1,
         "handlers": {
             "stackdriver": {
                 "class": "google.cloud.logging.handlers.CloudLoggingHandler",
-                "client": logger,
+                "client": log_client,
             }
         },
         "loggers": {"": {"handlers": ["stackdriver"], "level": "DEBUG"}},
     }
+    print("before")
+    logging.debug("This is a debug message")
+    logging.info("This is an info message")
+    logging.warning("This is a warning")
+    logging.error("This is an error")
 
 
 CURRENT_HOST = env.list("CURRENT_HOST", default=None)
