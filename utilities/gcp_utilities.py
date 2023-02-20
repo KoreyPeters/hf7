@@ -3,6 +3,8 @@ import time
 
 import google.api_core.exceptions
 import orjson
+from django.conf import settings
+
 import pendulum
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
@@ -40,7 +42,7 @@ def create_task(queue_name, task_name, data, delay_minutes=0):
                             "url": f"{os.environ['CURRENT_HOST']}/tasks/{queue_name}/",
                             "headers": {
                                 "Content-Type": "application/json",
-                                "Authorization": f"Basic {os.environ['drf-token']}",
+                                "Authorization": f"Basic {settings.ENV['drf-token']}",
                                 "body": orjson.dumps(data, default=default),
                             },
                         },
