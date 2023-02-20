@@ -22,6 +22,7 @@ from google.cloud import secretmanager, storage
 from google.cloud.logging import Client
 
 env = environ.Env()
+ENV = env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,7 @@ env_file = env("ENV_PATH", default=BASE_DIR / ".env")
 
 if env_file.exists():
     env.read_env(str(env_file))
-    ENV = env
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 TESTING = "test" in sys.argv
