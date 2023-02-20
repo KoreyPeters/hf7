@@ -48,7 +48,7 @@ def events_list(request):
                     "finalize-event",
                     f"finalize-event--{event.id}",
                     {
-                        "event_id": event.id,
+                        "event_id": event.id.str,
                     },
                     delay_minutes=60 * 24 * 3,
                 )
