@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "extra_settings",
     "rest_framework",
     "rest_framework.authtoken",
     "crispy_forms",
@@ -287,3 +288,30 @@ LOCATION_FIELD = {
     "provider.mapbox.access_token": os.environ.get("MAPBOX_TOKEN"),
     "provider.mapbox.id": "mapbox.streets",
 }
+
+EXTRA_SETTINGS_DEFAULTS = [
+    {
+        "name": "EVENTIUM_FINALIZATION_DELAY_MINUTES",
+        "type": "int",
+        "value": 60 * 24 * 3,
+        "description": "Time, in minutes, between when the event is created and when it is finalized",
+    },
+    {
+        "name": "EVENTIUM_SURVEY_THRESHOLD",
+        "type": "int",
+        "value": 20,
+        "description": "The percentage of all event attendees who are offered a survey.",
+    },
+    {
+        "name": "EVENTIUM_EVENT_LENGTH_MINUTES",
+        "type": "int",
+        "value": 60 * 2,
+        "description": "Time, in minutes starting from when the event is created, that an event can be checked in to",
+    },
+    {
+        "name": "EVENTIUM_SURVEY_NOTIFICATION_DELAY_MINUTES",
+        "type": "int",
+        "value": 60 * 3,
+        "description": "Time, in minutes, between when a survey is assigned and when the user is notified",
+    },
+]

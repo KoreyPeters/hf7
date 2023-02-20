@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from extra_settings.models import Setting
 
 import pendulum
 from eventium.forms import EventForm
@@ -22,7 +23,9 @@ def events_detail(request, event_id):
     can_check_in = False
     if (
         event.organizer != request.user
-        and event.created_at > pendulum.now() - pendulum.duration(hours=2)
+        and event.created_at
+        > pendulum.now()
+        - pendulum.duration(hours=Setting.get("EVENTIUM_EVENT_LENGTH_MINUTES"))
     ):
         can_check_in = True
     return render(request, "eventium/events_detail.html", locals())
@@ -50,7 +53,7 @@ def events_list(request):
                     {
                         "event_id": event.id.str,
                     },
-                    delay_minutes=60 * 24 * 3,
+                    delay_minutes=Setting.get("EVENTIUM_FINALIZATION_DELAY_MINUTES"),
                 )
             return redirect("eventium-events-detail", event_id=event.id)
     else:
@@ -101,7 +104,9 @@ def events_checkin(request, event_id, attendee_id):
                         entity=event.id,
                     )
 
-                    if random.randint(0, 100) < 20:
+                    if random.randint(0, 100) < Setting.get(
+                        "EVENTIUM_SURVEY_THRESHOLD"
+                    ):
                         if os.environ.get("CURRENT_HOST"):
                             create_task(
                                 "survey-initiated",
@@ -111,7 +116,9 @@ def events_checkin(request, event_id, attendee_id):
                                     "activity_id": activity.id,
                                     "entity_id": event.id,
                                 },
-                                delay_minutes=60 * 3,
+                                delay_minutes=Setting.get(
+                                    "EVENTIUM_SURVEY_NOTIFICATION_DELAY_MINUTES"
+                                ),
                             )
 
                     messages.success(
