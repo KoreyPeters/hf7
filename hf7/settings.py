@@ -128,6 +128,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework.authtoken",
     "crispy_forms",
     "location_field.apps.DefaultConfig",
     "eventium.apps.EventiumConfig",

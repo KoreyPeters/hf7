@@ -40,7 +40,7 @@ def create_task(queue_name, task_name, data, delay_minutes=0):
                             "url": f"{os.environ['CURRENT_HOST']}/tasks/{queue_name}/",
                             "headers": {
                                 "Content-Type": "application/json",
-                                "x-api-key": os.environ["drf-token"],
+                                "Authorization": f"Basic {os.environ['drf-token']}",
                                 "body": orjson.dumps(data, default=default),
                             },
                         },
