@@ -43,8 +43,8 @@ def create_task(queue_name, task_name, data, delay_minutes=0):
                             "headers": {
                                 "Content-Type": "application/json",
                                 "Authorization": f"Basic {settings.ENV('DRF_TOKEN')}",
-                                "body": orjson.dumps(data, default=default),
                             },
+                            "body": orjson.dumps(data, default=default),
                         },
                         "name": client.task_path(
                             "human-flourishing-4", "us-central1", queue_name, task_name
