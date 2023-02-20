@@ -43,7 +43,7 @@ def events_list(request):
             )
             category = Category.objects.get(name="DefaultEvent")
             EventCategory.objects.create(event=event, category=category)
-            if os.environ.get("ROOT_URL"):
+            if os.environ.get("CURRENT_HOST"):
                 create_task(
                     "finalize-event",
                     f"finalize-event--{event.id}",
@@ -102,7 +102,7 @@ def events_checkin(request, event_id, attendee_id):
                     )
 
                     if random.randint(0, 100) < 20:
-                        if os.environ.get("ROOT_URL"):
+                        if os.environ.get("CURRENT_HOST"):
                             create_task(
                                 "survey-initiated",
                                 f"create-survey--{request.user.id}--{event.id}",

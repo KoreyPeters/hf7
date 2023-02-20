@@ -37,7 +37,7 @@ def create_task(queue_name, task_name, data, delay_minutes=0):
                     "task": {
                         "http_request": {
                             "http_method": tasks_v2.HttpMethod.POST,
-                            "url": f"{os.environ['ROOT_URL']}/tasks/{queue_name}/",
+                            "url": f"{os.environ['CURRENT_HOST']}/tasks/{queue_name}/",
                             "headers": {
                                 "Content-Type": "application/json",
                                 "x-api-key": os.environ["drf-token"],
