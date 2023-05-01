@@ -18,7 +18,7 @@ GCS: Optional[storage.Client] = None
 
 
 def new_ulid():
-    return ulid.new
+    return ulid.new()
 
 
 class HfModel(models.Model):
