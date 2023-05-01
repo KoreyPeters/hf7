@@ -13,6 +13,10 @@ class ActivityAdmin(ModelAdmin):
     list_filter = ["kind"]
 
 
+class HfUserAdmin(UserAdmin):
+    list_display_links = ["email"]
+
+
 class CriterionAdmin(ModelAdmin):
     list_display = ["question", "category", "value"]
     list_filter = ["category"]
