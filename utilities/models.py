@@ -1,3 +1,4 @@
+import datetime
 import time
 from typing import Optional
 
@@ -107,6 +108,9 @@ class Activity(HfModel):
         }
 
     def create_folder(self):
+        if isinstance(self.created_at, datetime.datetime):
+            self.created_at = pendulum.instance(self.created_at)
+
         _date, _time = self.created_at.to_rfc3339_string().split("T")
         year, month, day = _date.split("-")
         hour, minute = _time.split(":")[:2]
