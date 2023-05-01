@@ -11,6 +11,8 @@ from eventium.models import Event
 from utilities.mailer import send_simple_message
 from utilities.models import Survey, HfUser, Criterion, Activity
 
+log = logging.getLogger(__name__)
+
 
 @api_view(["POST"])
 @authentication_classes([authentication.TokenAuthentication])
@@ -36,17 +38,17 @@ def survey_initiated(request):
 @api_view(["POST"])
 @authentication_classes([authentication.TokenAuthentication])
 def finalize_event(request):
-    logging.info("Finalizing an event")
+    log.info("Finalizing an event")
     data = request.data
-    logging.debug(data)
+    log.debug(data)
     event = Event.objects.get(id=data["event_id"])
-    logging.debug(event)
+    log.debug(event)
 
     # Roll up all surveys
     surveys = Survey.objects.filter(entity=event.id, completed_at__isnull=False)
     survey_results = {}
     for survey in surveys:
-        logging.debug(f"Processing a survey: {survey}")
+        log.debug(f"Processing a survey: {survey}")
         for result in survey.survey_results:
             if result["id"] in survey_results:
                 survey_results[result["id"]]["count"] = (
@@ -72,7 +74,7 @@ def finalize_event(request):
         )
         final_rating += criterion_value * success_percentage
     event.rating = final_rating
-    logging.info(f"Final rating for this event was {final_rating}")
+    log.info(f"Final rating for this event was {final_rating}")
 
     # Award points to all attendees
     attendee_count = 0
@@ -80,8 +82,8 @@ def finalize_event(request):
         entity=event.id, kind=Activity.ActivityKind.EVENTIUM_EVENT_ATTENDANCE
     )
     for activity in attendees:
-        logging.info(f"Updating {activity} with points")
-        logging.debug(type(activity.created_at))
+        log.info(f"Updating {activity} with points")
+        log.debug(type(activity.created_at))
         activity.points = event.rating
         activity.save()
         attendee_count += 1
@@ -98,7 +100,7 @@ def finalize_event(request):
         Sum("points")
     )["points__sum"]
     organizer.user.save()
-    logging.debug(
+    log.debug(
         f"The organizer of this event was awarded {organizer.user.points} points."
     )
 
@@ -106,5 +108,5 @@ def finalize_event(request):
     event.finalized_at = pendulum.now()
     event.save()
 
-    logging.info("Event finalization complete")
+    log.info("Event finalization complete")
     return Response()
