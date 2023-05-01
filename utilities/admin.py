@@ -22,7 +22,7 @@ class CriterionAdmin(ModelAdmin):
     list_filter = ["category"]
 
 
-admin.site.register(HfUser, UserAdmin)
+admin.site.register(HfUser, HfUserAdmin)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Category)
 admin.site.register(Configuration)
