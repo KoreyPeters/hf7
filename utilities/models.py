@@ -176,3 +176,6 @@ class Survey(HfModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="surveys"
     )
     survey_results = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user} -> {self.activity}"
