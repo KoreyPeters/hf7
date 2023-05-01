@@ -26,7 +26,7 @@ def survey_initiated(request):
         "Surveys help us to know what people and organizations are doing their best to advance human flourishing. "
         "You have been issued a survey for a recent activity. Click the following link to go to the survey directly, or "
         f"log in to https://www.humanflourishing.online and click 'Surveys' from the navigation bar at the top of the "
-        f"page.\nhttps://www.humanflourishing.online/profile/surveys/{survey.id}/",
+        f"page.\nhttps://www.humanflourishing.online/profile/surveys/{survey.id}",
     )
     return Response()
 
