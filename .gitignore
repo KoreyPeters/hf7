@@ -132,3 +132,4 @@ dmypy.json
 
 /ui/survey/public/
 /prod-ca-2021.crt
+/test_plaid.py

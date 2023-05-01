@@ -28,3 +28,6 @@ class EventCategory(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = PendulumDateTimeField(default=pendulum.now)
+
+    def __str__(self):
+        return f"{self.event} -> {self.category}"

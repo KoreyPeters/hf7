@@ -4,17 +4,13 @@ import time
 import google.api_core.exceptions
 import orjson
 from django.conf import settings
-
-import pendulum
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
 
+import pendulum
+from utilities.json_default import default
+
 client = None
-
-
-def default(obj):
-    if isinstance(obj, pendulum.DateTime):
-        return obj.to_rfc3339_string()
 
 
 def create_task(queue_name, task_name, data, delay_minutes=0):

@@ -1,14 +1,24 @@
-import pendulum
+import time
+from typing import Optional
+
+import google.api_core.exceptions
+import orjson
+import ulid
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django_ulid.models import default, ULIDField
+from google.cloud import storage
 
+import pendulum
+from django_ulid.models import ULIDField
+from utilities.json_default import default
 from utilities.modelfields import PendulumDateTimeField
+
+GCS: Optional[storage.Client] = None
 
 
 def new_ulid():
-    return default()
+    return ulid.new
 
 
 class HfModel(models.Model):
@@ -26,6 +36,9 @@ class HfUser(AbstractUser):
         "Membership", on_delete=models.SET_NULL, blank=True, null=True
     )
     plaid_auth_token = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.safe_username()
 
     def safe_username(self) -> str:
         if self.username:
@@ -76,9 +89,50 @@ class Activity(HfModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="activities"
     )
     entity = ULIDField()
+    last_updated_at = PendulumDateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.safe_username()} - {self.kind}"
+
+    def as_dict(self):
+        return {
+            "id": self.id.str,
+            "create_at": self.created_at.to_rfc3339_string(),
+            "entity": self.entity.str,
+            "kind": self.get_kind_display(),
+            "last_updated_at": self.last_updated_at.to_rfc3339_string(),
+            "points": self.points,
+            "url": self.url,
+            "user": str(self.user_id),
+        }
+
+    def create_folder(self):
+        _date, _time = self.created_at.to_rfc3339_string().split("T")
+        year, month, day = _date.split("-")
+        hour, minute = _time.split(":")[:2]
+        return f"{year}/{month}/{day}/{hour}/{minute}"
+
+    def save_to_gcs(self):
+        global GCS
+        if not GCS:
+            GCS = storage.Client()
+        folder = self.create_folder()
+        filename = f"{folder}/{self.id.str}.json"
+        try:
+            self._save_to_gcs(filename)
+        except google.api_core.exceptions.ServiceUnavailable:
+            time.sleep(1)
+            self._save_to_gcs(filename)
+
+    def _save_to_gcs(self, filename):
+        bucket = GCS.get_bucket("hf-activities")
+        blob = bucket.blob(filename)
+        blob.upload_from_string(orjson.dumps(self.as_dict(), default=default))
+
+    def save(self, *args, **kwargs):
+        self.last_updated_at = pendulum.now()
+        self.save_to_gcs()
+        super().save(*args, **kwargs)
 
 
 class Category(HfModel):
