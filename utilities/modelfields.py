@@ -8,6 +8,7 @@ class PendulumDateTimeField(DateTimeField):
         if dt:
             return pendulum.instance(dt)
         else:
+            print(dt)
             return dt
 
     def value_to_string(self, obj):
